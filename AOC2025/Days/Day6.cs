@@ -63,7 +63,7 @@ namespace AOC2025.Days
                 var op = ' ';
                 var actual = new List<string>();
                 var cur = "";
-                var result = 0;
+                long result = 0;
                 while (!endOfColumn)
                 {
                     foreach (var stack in splitLines)
@@ -82,8 +82,10 @@ namespace AOC2025.Days
                     }
                     // the vertical row is a number 
                     actual.Add(cur);
+                    Console.WriteLine(cur);
                     cur = "";
                 }
+                actual = [.. actual.Where(n => !string.IsNullOrWhiteSpace(n))];
 
                 if (op == '*')
                 {
@@ -100,6 +102,7 @@ namespace AOC2025.Days
                         result += int.Parse(num);
                     }
                 }
+                Console.WriteLine(result);
                 solution += result;
             }
 
