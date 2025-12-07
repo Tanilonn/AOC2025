@@ -18,23 +18,12 @@ namespace AOC2025.Days
             for (int i = 0; i < operators.Length; i++)
             {
                 var op = operators[i];
-                long result = 0;
-                if (op == "*")
-                {
-                    result = 1;
-                }
+                var actual = new List<string>();
                 foreach (var num in numbers)
                 {
-                    if (op == "*")
-                    {
-                        result *= int.Parse(num[i]);
-                    }
-                    if (op == "+")
-                    {
-                        result += int.Parse(num[i]);
-                    }
+                    actual.Add(num[i]);
                 }
-                solution += result;
+                solution += CalculateColumnResult(op[0], actual);
             }
 
             Console.WriteLine("solution is: " + solution);
@@ -46,51 +35,38 @@ namespace AOC2025.Days
             List<Stack<char>> splitLines = CreateStacks(lines);
             long solution = 0;
 
-            var operators = splitLines.Last();
-
-            while (operators.Count > 0)
+            while (splitLines.Last().Count > 0)
             {
                 var endOfColumn = false;
                 var op = ' ';
                 var actual = new List<string>();
-                var cur = "";
-                long result = 0;
+                var verticalNum = "";
                 while (!endOfColumn)
                 {
                     foreach (var stack in splitLines)
                     {
-                        // pop the first char in each stack
                         var c = stack.Pop();
-                        // if we found an operator we're at the end of the column and should start calcing
                         if (c == '+' || c == '*')
                         {
                             endOfColumn = true;
                             op = c;
                             break;
                         }
-                        // else we concat it to the current num
-                        cur += c;
+                        verticalNum += c;
                     }
-                    // the vertical row is a number 
-                    actual.Add(cur);
-                    cur = "";
+                    actual.Add(verticalNum);
+                    verticalNum = "";
                 }
                 actual = [.. actual.Where(n => !string.IsNullOrWhiteSpace(n))];
 
-                result = CalculateColumnResult(op, actual, result);
-
-                solution += result;
+                solution += CalculateColumnResult(op, actual);
             }
-
             Console.WriteLine("solution is: " + solution);
         }
 
-        private static long CalculateColumnResult(char op, List<string> actual, long result)
+        private static long CalculateColumnResult(char op, List<string> actual)
         {
-            if (op == '*')
-            {
-                result = 1;
-            }
+            long result = op == '*' ? 1 : 0;
             foreach (var num in actual)
             {
                 if (op == '*')
@@ -102,7 +78,6 @@ namespace AOC2025.Days
                     result += int.Parse(num);
                 }
             }
-
             return result;
         }
 
@@ -118,9 +93,7 @@ namespace AOC2025.Days
                 }
                 splitLines.Add(stack);
             }
-
             return splitLines;
         }
     }
-
 }
