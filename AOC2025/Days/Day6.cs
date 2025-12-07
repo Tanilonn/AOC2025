@@ -43,16 +43,7 @@ namespace AOC2025.Days
         public static void DoPuzzlePart2()
         {
             var lines = File.ReadAllLines("./Input/Day6Input.txt");
-            var splitLines = new List<Stack<char>>();
-            foreach (var line in lines)
-            {
-                var stack = new Stack<char>();
-                foreach (var num in line)
-                {
-                    stack.Push(num);
-                }
-                splitLines.Add(stack);
-            }
+            List<Stack<char>> splitLines = CreateStacks(lines);
             long solution = 0;
 
             var operators = splitLines.Last();
@@ -82,31 +73,53 @@ namespace AOC2025.Days
                     }
                     // the vertical row is a number 
                     actual.Add(cur);
-                    Console.WriteLine(cur);
                     cur = "";
                 }
                 actual = [.. actual.Where(n => !string.IsNullOrWhiteSpace(n))];
 
-                if (op == '*')
-                {
-                    result = 1;
-                }
-                foreach (var num in actual)
-                {
-                    if (op == '*')
-                    {
-                        result *= int.Parse(num);
-                    }
-                    if (op == '+')
-                    {
-                        result += int.Parse(num);
-                    }
-                }
-                Console.WriteLine(result);
+                result = CalculateColumnResult(op, actual, result);
+
                 solution += result;
             }
 
             Console.WriteLine("solution is: " + solution);
+        }
+
+        private static long CalculateColumnResult(char op, List<string> actual, long result)
+        {
+            if (op == '*')
+            {
+                result = 1;
+            }
+            foreach (var num in actual)
+            {
+                if (op == '*')
+                {
+                    result *= int.Parse(num);
+                }
+                if (op == '+')
+                {
+                    result += int.Parse(num);
+                }
+            }
+
+            return result;
+        }
+
+        private static List<Stack<char>> CreateStacks(string[] lines)
+        {
+            var splitLines = new List<Stack<char>>();
+            foreach (var line in lines)
+            {
+                var stack = new Stack<char>();
+                foreach (var num in line)
+                {
+                    stack.Push(num);
+                }
+                splitLines.Add(stack);
+            }
+
+            return splitLines;
         }
     }
 
