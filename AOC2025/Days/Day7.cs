@@ -74,7 +74,7 @@ namespace AOC2025.Days
                 var toRemove = new List<Branch>();
                 var toAdd = new List<Branch>();
                 var newNodes = new List<Node>();
-                Console.WriteLine("looping over " + branches.Count + " branches");
+                //Console.WriteLine("looping over " + branches.Count + " branches");
                 foreach (var branch in branches)
                 {
                     if (lineAsChars[branch.IndexOrigin] == '.')
@@ -88,7 +88,7 @@ namespace AOC2025.Days
                         var n = newNodes.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin, l.ToString() + branch.IndexOrigin.ToString());
                         newNodes.Add(n);
                         branch.NodeAtOrigin.Children.Add(n);
-                        Console.WriteLine("Added " + n.Name + " as child of " + branch.NodeAtOrigin.Name);
+                        //Console.WriteLine("Added " + n.Name + " as child of " + branch.NodeAtOrigin.Name);
                         if (!toAdd.Any(b => b.IndexOrigin == branch.IndexOrigin - 1 && b.NodeAtOrigin == n))
                         {
                             toAdd.Add(new Branch(branch.IndexOrigin - 1, n));
@@ -108,8 +108,54 @@ namespace AOC2025.Days
 
                 newNodes.Clear();
             }
+            var toAdd1 = new List<Branch>();
+            var newNodes1 = new List<Node>();
+            foreach (var branch in branches)
+            {
+                var n = newNodes1.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin, l.ToString() + branch.IndexOrigin.ToString());
+                newNodes1.Add(n);
+                branch.NodeAtOrigin.Children.Add(n);
+                //Console.WriteLine("Added " + n.Name + " as child of " + branch.NodeAtOrigin.Name);
+                if (!toAdd1.Any(b => b.IndexOrigin == branch.IndexOrigin - 1 && b.NodeAtOrigin == n))
+                {
+                    toAdd1.Add(new Branch(branch.IndexOrigin - 1, n));
+                }
+                if (!toAdd1.Any(b => b.IndexOrigin == branch.IndexOrigin + 1 && b.NodeAtOrigin == n))
+                {
+                    toAdd1.Add(new Branch(branch.IndexOrigin + 1, n));
+                }
 
-            Console.WriteLine("solution is: " + DFSIterativeCountPaths(root));
+            }
+            Console.WriteLine("solution is: " + AllPathsSourceTarget(root).Count);
+        }
+
+        private static IList<IList<Node>> AllPathsSourceTarget(Node root)
+        {
+            var result = new List<IList<Node>>();
+            var queue = new Queue<List<Node>>();
+
+            queue.Enqueue(new List<Node> { root });
+
+            while (queue.Count > 0)
+            {
+                var currentPath = queue.Dequeue();
+                var currentNode = currentPath[currentPath.Count - 1];
+
+                if (currentNode.Children.Count == 0)
+                {
+                    result.Add(currentPath);
+                }
+                else
+                {
+                    foreach (var child in currentNode.Children)
+                    {
+                        currentPath.Add(child);
+                        queue.Enqueue(new List<Node>(currentPath));
+                        currentPath.RemoveAt(currentPath.Count - 1);
+                    }
+                }
+            }
+            return result;
         }
 
         private static int DFSIterativeCountPaths(Node root)
