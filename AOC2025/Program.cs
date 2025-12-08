@@ -1,3 +1,3 @@
 ﻿using AOC2025.Days;
 
-Day6.DoPuzzlePart2();
+Day7.DoPuzzlePart1();
