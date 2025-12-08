@@ -55,15 +55,10 @@ namespace AOC2025.Days
             var lines = File.ReadAllLines("./Input/Day7Input.txt");
 
             var branches = new List<Branch>();
-            var root = new Node(0, "root");
-            var l = 0;
-            var allNodes = new List<Node>
-            {
-                root
-            };
+            var root = new Node(0);
+            var allNodes = new List<Node> {root};
             foreach (var line in lines)
             {
-                l++;
                 // first line
                 var indexOfS = line.IndexOf('S');
                 if (indexOfS != -1)
@@ -78,7 +73,6 @@ namespace AOC2025.Days
                 var toRemove = new List<Branch>();
                 var toAdd = new List<Branch>();
                 var newNodes = new List<Node>();
-                //Console.WriteLine("looping over " + branches.Count + " branches");
                 foreach (var branch in branches)
                 {
                     if (lineAsChars[branch.IndexOrigin] == '.')
@@ -89,17 +83,8 @@ namespace AOC2025.Days
                     {
                         lineAsChars[branch.IndexOrigin - 1] = '|';
                         lineAsChars[branch.IndexOrigin + 1] = '|';
-                        var n = newNodes.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin, l.ToString() + branch.IndexOrigin.ToString());
-                        newNodes.Add(n);
-                        branch.NodeAtOrigin.Children.Add(n);
-                        if (!toAdd.Any(b => b.IndexOrigin == branch.IndexOrigin - 1 && b.NodeAtOrigin == n))
-                        {
-                            toAdd.Add(new Branch(branch.IndexOrigin - 1, n));
-                        }
-                        if (!toAdd.Any(b => b.IndexOrigin == branch.IndexOrigin + 1 && b.NodeAtOrigin == n))
-                        {
-                            toAdd.Add(new Branch(branch.IndexOrigin + 1, n));
-                        }
+
+                        GetBranchesFromOrigin(toAdd, newNodes, branch);
                         toRemove.Add(branch); // this branch has ended
                     }
                 }
@@ -109,36 +94,38 @@ namespace AOC2025.Days
                     branches.Remove(branch);
                 }
                 branches.AddRange(toAdd);
-
-                newNodes.Clear();
             }
-            var toAdd1 = new List<Branch>();
-            var newNodes1 = new List<Node>();
+            // the input doesn't have ^ in the last line but we do want a node at the end of each path
+            var finalBranches = new List<Branch>();
+            var finalNodes = new List<Node>();
             foreach (var branch in branches)
             {
-                var n = newNodes1.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin, l.ToString() + branch.IndexOrigin.ToString());
-                newNodes1.Add(n);
-                branch.NodeAtOrigin.Children.Add(n);
-                if (!toAdd1.Any(b => b.IndexOrigin == branch.IndexOrigin - 1 && b.NodeAtOrigin == n))
-                {
-                    toAdd1.Add(new Branch(branch.IndexOrigin - 1, n));
-                }
-                if (!toAdd1.Any(b => b.IndexOrigin == branch.IndexOrigin + 1 && b.NodeAtOrigin == n))
-                {
-                    toAdd1.Add(new Branch(branch.IndexOrigin + 1, n));
-                }
-
+                GetBranchesFromOrigin(finalBranches, finalNodes, branch);
             }
-            allNodes.AddRange(newNodes1.Distinct());
+            allNodes.AddRange(finalNodes.Distinct());
+
             Console.WriteLine("solution is: " + PathCounter.CountPaths(root, allNodes));
+        }
+
+        private static void GetBranchesFromOrigin(List<Branch> toAdd, List<Node> newNodes, Branch branch)
+        {
+            var n = newNodes.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin);
+            newNodes.Add(n);
+            branch.NodeAtOrigin.Children.Add(n);
+            if (!toAdd.Any(b => b.IndexOrigin == branch.IndexOrigin - 1 && b.NodeAtOrigin == n))
+            {
+                toAdd.Add(new Branch(branch.IndexOrigin - 1, n));
+            }
+            if (!toAdd.Any(b => b.IndexOrigin == branch.IndexOrigin + 1 && b.NodeAtOrigin == n))
+            {
+                toAdd.Add(new Branch(branch.IndexOrigin + 1, n));
+            }
         }
     }
 
-    internal class Node(int index, string name)
+    internal class Node(int index)
     {
         public int Index { get; set; } = index;
-
-        public string Name { get; set; } = name;
         public List<Node> Children { get; set; } = [];
     }
 
