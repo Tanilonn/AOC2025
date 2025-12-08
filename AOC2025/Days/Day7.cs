@@ -70,8 +70,10 @@ namespace AOC2025.Days
                 }
                 char[] lineAsChars = line.ToCharArray();
 
-                var newBranches = new List<Branch>();
+                var toRemove = new List<Branch>();
+                var toAdd = new List<Branch>();
                 var newNodes = new List<Node>();
+                Console.WriteLine("looping over " + branches.Count + " branches");
                 foreach (var branch in branches)
                 {
                     if (lineAsChars[branch.IndexOrigin] == '.')
@@ -85,18 +87,22 @@ namespace AOC2025.Days
                         var n = newNodes.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin);
                         newNodes.Add(n);
                         branch.NodeAtOrigin.Children.Add(n);
-                        newBranches.Add(new Branch(branch.IndexOrigin - 1, n));
-                        newBranches.Add(new Branch(branch.IndexOrigin + 1, n));
+                        Console.WriteLine("Added " + n.Index + " as child of " + branch.NodeAtOrigin.Index);
+                        toAdd.Add(new Branch(branch.IndexOrigin - 1, n));
+                        toAdd.Add(new Branch(branch.IndexOrigin + 1, n));
+                        toRemove.Add(branch); // this branch has ended
                     }
                 }
+                foreach (var branch in toRemove)
+                {
+                    branches.Remove(branch);
+                }
+                branches.AddRange(toAdd);
 
-                branches.Clear();
-                branches.AddRange(newBranches);
                 newNodes.Clear();
-                newBranches.Clear();
             }
 
-            Console.WriteLine("solution is: " + DFSIterativeCountPaths(root));
+            Console.WriteLine("solution is: " + branches.Count);
         }
 
         private static int DFSIterativeCountPaths(Node root)
