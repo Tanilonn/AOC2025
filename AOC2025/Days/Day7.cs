@@ -55,10 +55,11 @@ namespace AOC2025.Days
             var lines = File.ReadAllLines("./Input/Day7Input.txt");
 
             var branches = new List<Branch>();
-            var root = new Node(0);
-
+            var root = new Node(0, "root");
+            var l = 0;
             foreach (var line in lines)
             {
+                l++;
                 // first line
                 var indexOfS = line.IndexOf('S');
                 if (indexOfS != -1)
@@ -84,12 +85,18 @@ namespace AOC2025.Days
                     {
                         lineAsChars[branch.IndexOrigin - 1] = '|';
                         lineAsChars[branch.IndexOrigin + 1] = '|';
-                        var n = newNodes.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin);
+                        var n = newNodes.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin, l.ToString() + branch.IndexOrigin.ToString());
                         newNodes.Add(n);
                         branch.NodeAtOrigin.Children.Add(n);
-                        Console.WriteLine("Added " + n.Index + " as child of " + branch.NodeAtOrigin.Index);
-                        toAdd.Add(new Branch(branch.IndexOrigin - 1, n));
-                        toAdd.Add(new Branch(branch.IndexOrigin + 1, n));
+                        Console.WriteLine("Added " + n.Name + " as child of " + branch.NodeAtOrigin.Name);
+                        if (!toAdd.Any(b => b.IndexOrigin == branch.IndexOrigin - 1 && b.NodeAtOrigin == n))
+                        {
+                            toAdd.Add(new Branch(branch.IndexOrigin - 1, n));
+                        }
+                        if (!toAdd.Any(b => b.IndexOrigin == branch.IndexOrigin + 1 && b.NodeAtOrigin == n))
+                        {
+                            toAdd.Add(new Branch(branch.IndexOrigin + 1, n));
+                        }
                         toRemove.Add(branch); // this branch has ended
                     }
                 }
@@ -102,7 +109,7 @@ namespace AOC2025.Days
                 newNodes.Clear();
             }
 
-            Console.WriteLine("solution is: " + branches.Count);
+            Console.WriteLine("solution is: " + DFSIterativeCountPaths(root));
         }
 
         private static int DFSIterativeCountPaths(Node root)
@@ -116,16 +123,16 @@ namespace AOC2025.Days
             while (stack.Count > 0)
             {
                 var node = stack.Pop();
-
+                Console.WriteLine(node.Name);
+                if (node.Children.Count == 0)
+                {
+                    // this is a leaf, we have found a path to a leaf
+                    Console.WriteLine("path done");
+                    paths++;
+                }
                 if (!visited.Contains(node))
                 {
                     visited.Add(node);
-                    if (node.Children.Count == 0)
-                    {
-                        // this is a leaf, we have found a path to a leaf
-                        paths++;
-                    }
-
                     foreach (var neighboringCity in node.Children)
                     {
                         stack.Push(neighboringCity);
@@ -136,9 +143,11 @@ namespace AOC2025.Days
         }
     }
 
-    internal class Node(int index)
+    internal class Node(int index, string name)
     {
         public int Index { get; set; } = index;
+
+        public string Name { get; set; } = name;
         public List<Node> Children { get; set; } = [];
     }
 
