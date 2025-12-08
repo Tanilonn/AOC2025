@@ -57,6 +57,10 @@ namespace AOC2025.Days
             var branches = new List<Branch>();
             var root = new Node(0, "root");
             var l = 0;
+            var allNodes = new List<Node>
+            {
+                root
+            };
             foreach (var line in lines)
             {
                 l++;
@@ -88,7 +92,6 @@ namespace AOC2025.Days
                         var n = newNodes.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin, l.ToString() + branch.IndexOrigin.ToString());
                         newNodes.Add(n);
                         branch.NodeAtOrigin.Children.Add(n);
-                        //Console.WriteLine("Added " + n.Name + " as child of " + branch.NodeAtOrigin.Name);
                         if (!toAdd.Any(b => b.IndexOrigin == branch.IndexOrigin - 1 && b.NodeAtOrigin == n))
                         {
                             toAdd.Add(new Branch(branch.IndexOrigin - 1, n));
@@ -100,6 +103,7 @@ namespace AOC2025.Days
                         toRemove.Add(branch); // this branch has ended
                     }
                 }
+                allNodes.AddRange(newNodes.Distinct());
                 foreach (var branch in toRemove)
                 {
                     branches.Remove(branch);
@@ -115,7 +119,6 @@ namespace AOC2025.Days
                 var n = newNodes1.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin, l.ToString() + branch.IndexOrigin.ToString());
                 newNodes1.Add(n);
                 branch.NodeAtOrigin.Children.Add(n);
-                //Console.WriteLine("Added " + n.Name + " as child of " + branch.NodeAtOrigin.Name);
                 if (!toAdd1.Any(b => b.IndexOrigin == branch.IndexOrigin - 1 && b.NodeAtOrigin == n))
                 {
                     toAdd1.Add(new Branch(branch.IndexOrigin - 1, n));
@@ -126,66 +129,8 @@ namespace AOC2025.Days
                 }
 
             }
-            Console.WriteLine("solution is: " + AllPathsSourceTarget(root).Count);
-        }
-
-        private static IList<IList<Node>> AllPathsSourceTarget(Node root)
-        {
-            var result = new List<IList<Node>>();
-            var queue = new Queue<List<Node>>();
-
-            queue.Enqueue(new List<Node> { root });
-
-            while (queue.Count > 0)
-            {
-                var currentPath = queue.Dequeue();
-                var currentNode = currentPath[currentPath.Count - 1];
-
-                if (currentNode.Children.Count == 0)
-                {
-                    result.Add(currentPath);
-                }
-                else
-                {
-                    foreach (var child in currentNode.Children)
-                    {
-                        currentPath.Add(child);
-                        queue.Enqueue(new List<Node>(currentPath));
-                        currentPath.RemoveAt(currentPath.Count - 1);
-                    }
-                }
-            }
-            return result;
-        }
-
-        private static int DFSIterativeCountPaths(Node root)
-        {
-            var visited = new HashSet<Node>();
-            var stack = new Stack<Node>();
-            var paths = 0;
-
-            stack.Push(root);
-
-            while (stack.Count > 0)
-            {
-                var node = stack.Pop();
-                Console.WriteLine(node.Name);
-                if (node.Children.Count == 0)
-                {
-                    // this is a leaf, we have found a path to a leaf
-                    Console.WriteLine("path done");
-                    paths++;
-                }
-                if (!visited.Contains(node))
-                {
-                    visited.Add(node);
-                    foreach (var neighboringCity in node.Children)
-                    {
-                        stack.Push(neighboringCity);
-                    }
-                }
-            }
-            return paths;
+            allNodes.AddRange(newNodes1.Distinct());
+            Console.WriteLine("solution is: " + PathCounter.CountPaths(root, allNodes));
         }
     }
 
@@ -205,4 +150,38 @@ namespace AOC2025.Days
         public Node NodeAtOrigin { get; set; } = nodeAtOrigin;
     }
 
+
+    internal static class PathCounter
+    {
+        public static long CountPaths(Node root, List<Node> nodes)
+        {
+            var paths = new Dictionary<Node, long>();
+            foreach (var n in nodes)
+            {
+                paths[n] = 0;
+            }
+            paths[root] = 1;
+
+            foreach (var node in nodes)
+            {
+                var pathsToParent = paths[node];
+
+                foreach (var child in node.Children)
+                {
+                    paths[child] += pathsToParent;
+                }
+            }
+
+            // count how many paths there are to each leaf
+            long total = 0;
+            foreach (var n in nodes)
+            {
+                if (n.Children.Count == 0)
+                {
+                    total += paths[n];
+                }
+            }
+            return total;
+        }
+    }
 }
