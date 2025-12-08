@@ -13,7 +13,7 @@ namespace AOC2025.Days
             var splitCounter = 0;
 
             var foundIndexes = new List<int>();
-            
+
             foreach (var line in lines)
             {
                 // first line
@@ -21,7 +21,7 @@ namespace AOC2025.Days
                 if (indexOfS != -1)
                 {
                     foundIndexes.Add(indexOfS);
-                    continue;   
+                    continue;
                 }
                 char[] lineAsChars = line.ToCharArray();
 
@@ -36,7 +36,7 @@ namespace AOC2025.Days
                         splitCounter++;
                         lineAsChars[index - 1] = '|';
                         lineAsChars[index + 1] = '|';
-                    }                    
+                    }
                 }
                 var charsAsString = new string(lineAsChars);
                 foundIndexes.Clear();
@@ -54,10 +54,94 @@ namespace AOC2025.Days
         {
             var lines = File.ReadAllLines("./Input/Day7Input.txt");
 
-            long solution = 0;
+            var branches = new List<Branch>();
+            var root = new Node(0);
 
-            Console.WriteLine("solution is: " + solution);
+            foreach (var line in lines)
+            {
+                // first line
+                var indexOfS = line.IndexOf('S');
+                if (indexOfS != -1)
+                {
+                    branches.Add(new Branch(indexOfS, root));
+                    // this is our root
+                    root.Index = indexOfS;
+                    continue;
+                }
+                char[] lineAsChars = line.ToCharArray();
+
+                var newBranches = new List<Branch>();
+                var newNodes = new List<Node>();
+                foreach (var branch in branches)
+                {
+                    if (lineAsChars[branch.IndexOrigin] == '.')
+                    {
+                        lineAsChars[branch.IndexOrigin] = '|';
+                    }
+                    if (lineAsChars[branch.IndexOrigin] == '^')
+                    {
+                        lineAsChars[branch.IndexOrigin - 1] = '|';
+                        lineAsChars[branch.IndexOrigin + 1] = '|';
+                        var n = newNodes.FirstOrDefault(n => n.Index == branch.IndexOrigin) ?? new Node(branch.IndexOrigin);
+                        newNodes.Add(n);
+                        branch.NodeAtOrigin.Children.Add(n);
+                        newBranches.Add(new Branch(branch.IndexOrigin - 1, n));
+                        newBranches.Add(new Branch(branch.IndexOrigin + 1, n));
+                    }
+                }
+
+                branches.Clear();
+                branches.AddRange(newBranches);
+                newNodes.Clear();
+                newBranches.Clear();
+            }
+
+            Console.WriteLine("solution is: " + DFSIterativeCountPaths(root));
         }
+
+        private static int DFSIterativeCountPaths(Node root)
+        {
+            var visited = new HashSet<Node>();
+            var stack = new Stack<Node>();
+            var paths = 0;
+
+            stack.Push(root);
+
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+
+                if (!visited.Contains(node))
+                {
+                    visited.Add(node);
+                    if (node.Children.Count == 0)
+                    {
+                        // this is a leaf, we have found a path to a leaf
+                        paths++;
+                    }
+
+                    foreach (var neighboringCity in node.Children)
+                    {
+                        stack.Push(neighboringCity);
+                    }
+                }
+            }
+            return paths;
+        }
+    }
+
+    internal class Node(int index)
+    {
+        public int Index { get; set; } = index;
+        public List<Node> Children { get; set; } = [];
+    }
+
+    internal class Branch(int indexOrigin, Node nodeAtOrigin)
+    {
+        // the index of the char in the line
+        public int IndexOrigin { get; set; } = indexOrigin;
+
+        public Node NodeAtOrigin { get; set; } = nodeAtOrigin;
     }
 
 }
