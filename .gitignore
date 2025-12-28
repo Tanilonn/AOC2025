@@ -267,3 +267,5 @@ history/
 *.sln.iml
 Input/
 
+/.vs/AOC2025.slnx/v18/TestStore/0
+/.vs
