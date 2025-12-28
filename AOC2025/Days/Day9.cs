@@ -39,7 +39,7 @@ namespace AOC2025.Days
             var greenSquares = GetGreenSquares(lines);
 
             // loop through all combinations of two red tiles exactly once
-            var squares = new Dictionary<float, (Vector2, Vector2)>();
+            var squares = new Dictionary<(Vector2, Vector2), float>();
             for (int i = 0; i < lines.Length; i++)
             {
                 for (int j = i + 1; j < lines.Length; j++)
@@ -53,18 +53,18 @@ namespace AOC2025.Days
                     var difX = Math.Abs(a.X - b.X) + 1;
                     var difY = Math.Abs(a.Y - b.Y) + 1;
                     var squareSize = difX * difY;
-                    squares.TryAdd(squareSize, (a, b));
+                    squares.TryAdd((a, b), squareSize);
                 }
             }
-            var orderedSquares = squares.OrderBy(s => s.Key).ToList();
+            var orderedSquares = squares.OrderByDescending(s => s.Value).ToList();
             // big squares are checked first so we can exit early
             foreach (var square in orderedSquares)
             {
-                var squaresInSquare = GetVectorsInSquare(square.Value.Item1, square.Value.Item2);
+                var squaresInSquare = GetVectorsInSquare(square.Key.Item1, square.Key.Item2);
                 var squareIsAllGreen = squaresInSquare.All(greenSquares.Contains);
                 if (squareIsAllGreen)
                 {
-                    Console.WriteLine("solution is: " + square.Key);
+                    Console.WriteLine("solution is: " + square.Value);
                     break;
                 }
             }
@@ -94,21 +94,21 @@ namespace AOC2025.Days
             }
             var lowestY = greenSquares.Min(v => v.Y);
             var maxY = greenSquares.Max(v => v.Y);
-
+            greenSquares = greenSquares.Distinct().ToList();
             // then fill in the rest of the squares, going line by line and just making everything green that's between 2 red/green tiles
 
             var squaresInMiddle = new List<Vector2>();
             for (var y = lowestY; y < maxY; y++)
             {
                 var vectorsInRow = greenSquares.Where(v => v.Y == y);
-                var lowestX = greenSquares.Min(v => v.X);
-                var maxX = greenSquares.Max(v => v.X);
+                var lowestX = vectorsInRow.Min(v => v.X);
+                var maxX = vectorsInRow.Max(v => v.X);
 
                 squaresInMiddle.AddRange(GetVectorsInSquare(new Vector2(lowestX, y), new Vector2(maxX, y)));
             }
             greenSquares.AddRange(squaresInMiddle);
 
-            return greenSquares;
+            return greenSquares.Distinct().ToList();
         }
 
         private static List<Vector2> GetVectorsInSquare(Vector2 i, Vector2 j)
